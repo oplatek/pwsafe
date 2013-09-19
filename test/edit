@@ -1,0 +1,97 @@
+#!/bin/sh
+
+if [ -z "$srcdir" ]; then
+ srcdir=.
+fi
+
+pwsafe=$srcdir/pwsafe
+file=/tmp/edit_test.dat$$
+err=/tmp/edit_test.err$$
+pw=abc
+
+# create a new empty database
+[ ! -f $file ] || rm $file
+if [ -f $file ]; then
+  echo "Can't clean up $file. Please delete it yourself and then rerun this test"
+  exit 1
+fi
+
+# start out with test2.dat
+echo -n "Copying testv2.dat to $file: "
+cp $srcdir/testv2.dat $file
+if [ $? -ne 0 -o ! -r $file ]; then
+  echo "FAILED!"
+  echo "Unable to copy testv2.dat to $file"
+  exit 1
+else
+  echo OK
+fi
+
+# remove a non-existant entry
+echo -n "testing removing an entry that does not exist from $file: "
+cmdline="$pwsafe -f $file --delete does_not_exist"
+$cmdline 2>$err 1>&2 <<EOF
+$pw
+EOF
+
+if [ $? -ne 1 -o `cat $err | grep 'does_not_exist not found$' >/dev/null; echo $?` -ne 0 -o `cat $err | grep "$file unchanged\$" >/dev/null; echo $?` -ne 0 ]; then
+  echo "FAILED!"
+  echo "pwsafe is NOT WORKING PROPERLY. It is not properly failing to remove a non-existant entry from $file (passphrase: $pw)."
+  echo "Here is the cmdline:"
+  echo "$cmdline"
+  echo "Here is the output:"
+  cat $err
+  exit 1
+else
+  echo OK
+fi
+
+# edit an existing entry
+echo -n "testing editing 'testing' entry in $file: "
+cmdline="$pwsafe -f $file --edit testing"
+$cmdline 2>$err 1>&2  <<EOF
+abc
+new_name
+new_group
+new_username
+
+
+y
+EOF
+
+if [ $? -ne 0 ]; then
+  echo "FAILED!"
+  echo "pwsafe is NOT WORKING PROPERLY. It is not correctly editing testing entry in $file (passphrase: $pw)."
+  echo "Here is the cmdline:"
+  echo "$cmdline"
+  echo "Here is the output:"
+  cat $err
+  exit 1
+else
+  echo OK
+fi
+
+# remove an existing entry
+echo -n "testing removing 'testing' entry from $file: "
+cmdline="$pwsafe -f $file --delete new_group.new_name"
+$cmdline 2>$err 1>&2 <<EOF
+$pw
+EOF
+
+if [ $? -ne 0 ]; then
+  echo "FAILED!"
+  echo "pwsafe is NOT WORKING PROPERLY. It is not removing 'new_group.new_name' entry from $file (passphrase: $pw)."
+  echo "Here is the cmdline:"
+  echo "$cmdline"
+  echo "Here is the output:"
+  cat $err
+  exit 1
+else
+  echo OK
+fi
+
+# cleanup after ourselves
+rm $file $file~ $err
+
+exit 0
+

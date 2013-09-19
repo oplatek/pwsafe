@@ -1,0 +1,35 @@
+#!/bin/sh
+
+if [ -z "$srcdir" ]; then
+ srcdir=.
+fi
+
+# test pwsafe on known-good test.dat database, which uses "abc" as passphrase and contains one entry named "testing".
+test() {
+ pwsafe=$srcdir/pwsafe
+ file="$1"
+ pw="$2"
+ 
+ echo -n "testing pwsafe against $file database: "
+ out=`$pwsafe -f "$file" 2>&1 <<EOF
+$pw
+EOF
+`
+
+ if echo "$out" | grep 'testing$' >/dev/null; then
+   echo OK
+ else
+   echo "FAILED!"
+   echo "pwsafe is NOT WORKING PROPERLY. It is unable to decrypt $file (passphase: $pw)."
+   echo "Here is the output:"
+   echo "$out"
+   exit 1
+ fi
+}
+
+test $srcdir/test.dat "abc"
+test $srcdir/testv2.dat "abc"
+
+
+exit 0
+

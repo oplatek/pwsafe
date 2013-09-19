@@ -1,0 +1,187 @@
+.\" hey, Emacs:   -*- nroff -*-
+.\" pwsafe is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\" 
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\" 
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; see the file COPYING.  If not, write to
+.\" the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+.\" 
+.\" Please update the above date whenever this man page is modified.
+.\" 
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins (default)
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.TH "PWSAFE" "1" "@VERSION@" "Nicolas S. Dade <ndade@nsd.dyndns.org>" ""
+.SH "NAME"
+pwsafe \- commandline password database utility compatible with Counterpane's Passwordsafe
+.SH "SYNOPSIS"
+.B pwsafe
+.RI [options]
+.RI command
+.RI [arg]
+.SH "DESCRIPTION"
+\fBpwsafe\fP manipulates Counterpane Passwordsafe username/password databases.
+.PP 
+It is compatible with Counterpane Passwordsafe 1.9.x and 2.0 databases.
+.SH "COMMANDS"
+\fBpwsafe\fP accepts the following commands:
+.TP 
+.B  \-\-createdb
+Create a new database.
+.TP 
+.B  \-\-exportdb
+Export database as text.
+.TP 
+.B  \-\-mergedb=DATABASE_FILE
+Merge DATABASE_FILE into database. Common entries are merged interactively.
+.TP 
+.B  \-\-passwd
+Change the database's passphrase.
+.TP 
+.B  \-\-list[=REGEX]
+List all [matching] entries in database.
+.BR 
+If \-u or \-p is given then REGEX must match only one entry, and only the requested field(s) are emitted.
+.TP 
+.B  \-a, \-\-add[=NAME]
+Add an entry to database.
+.TP 
+.B  \-e, \-\-edit=REGEX
+Edit an entry.
+.TP 
+.B  \-\-delete=NAME
+Delete an entry from database.
+.TP 
+If no command is given, an interactive mode is entered.
+.SH "OPTIONS"
+\fBpwsafe\fP accepts the following options:
+.TP 
+.B  \-f, \-\-file=DATABASE_FILE
+Specify the database to manipulate. Default is $HOME/.pwsafe.dat
+.TP 
+.B  \-\-dbversion=[1|2]
+Specify the database's version. Default is 2.
+.TP 
+.B  \-I, \-\-case
+REGEX is case\-sensative. Any uppercase character in REGEX implies \-\-case.
+.TP 
+.B  \-l
+Show login and notes in list output.
+.TP 
+.B  \-u, \-\-username
+Show username of listed account(s).
+.TP 
+.B  \-p, \-\-password
+Show password of listed accounts(s).
+.TP 
+.B  \-E, \-\-echo
+Force echo'ing of entry to stdout. This is selected by default if $DISPLAY is not set.
+.TP 
+.B  \-o, \-\-output=FILE
+Redirect username and password output to FILE. Implies \-\-echo.
+.TP 
+.B  \-x, \-\-xclip
+Force copying of username and password to X clipboard. This is selected by default if $DISPLAY is set.
+.TP 
+.B  \-d, \-\-display=XDISPLAY
+Override $DISPLAY. Implies \-\-xclip.
+.TP 
+.B  \-s, \-\-selection={Primary,Secondary,Clipboard,Both}
+Select the X selection effected. Default is Both primary and clipboard. Implies \-\-xclip.
+.TP 
+.B  \-G, \-\-ignore=NAME@HOST
+Add NAME to windows or hosts that do not receive the selection. If just NAME is given it matches any host, and if just @HOST is given it matches any name.
+.TP 
+.B  \-v, \-\-verbose
+Print more information.
+.TP 
+.B  \-q, \-\-quiet
+Print less information. In fact, print only exactly what was requested.
+.TP 
+.B  \-h, \-\-help
+Show summary of options.
+.TP 
+.B  \-V, \-\-version
+Show version of program.
+
+.SH "ENVIRONMENT"
+.TP 
+PWSAFE_DATABASE
+Default database file. If this is a relative path it is assumed to be relative to $HOME. Defaults to ".pwsafe.dat". Overridden by \-f.
+.TP 
+PWSAFE_DEFAULT_USER
+Default user. Defaults to $USER or $LOGNAME.
+.TP 
+PWSAFE_IGNORE
+Overrides built\-in \-\-ignore list. \-\-ignore overrides. Format is a list of \-\-ignore arguments, seperated by colons (':').
+.TP 
+HOME
+Used to locate the default database "~/.pwsafe.dat" and default RANDFILE "~/.rnd".
+.TP 
+RANDFILE
+Used to locate the random number generator entropy pool file. Defaults to "$HOME/.rnd".
+.SH "FILES"
+.TP 
+~/.pwsafe.dat
+The password database.
+.TP 
+~/.pwsafe.dat~
+Backup of database.
+.TP 
+~/.rnd
+Random number generator's entropy pool.
+.SH "WARNINGS"
+Use a good password for your database.
+
+Don't use pwsafe over telnet or from untrusted terminals.
+
+To seed RANDFILE decently, do something like
+.br 
+   md5sum /var/log/* >~/.rnd
+.SH "EXAMPLES"
+For those who can't read the rest of this file:
+.BR 
+.TP 
+Create $HOME/.pwsafe.dat.
+
+pwsafe \-\-createdb
+.TP 
+Add an entry named 'test'.
+
+pwsafe \-a test
+.TP 
+Copy username and password of 'test' to console or X clipboard & primary selection.
+
+pwsafe \-up test
+.TP 
+Upgrade a version passwordsafe version 1.7 database to version 2.0 (we do this by merging it with itself, but specifying version 2 output)
+
+pwsafe \-\-mergedb $HOME/.pwsafe.dat \-\-dbversion 2
+.SH "AUTHOR"
+Nicolas S. Dade <ndade@nsd.dyndns.org>.
+.SH "REPORTING BUGS"
+Report bugs to <ndade@nsd.dyndns.org>.
+.SH "COPYRIGHT"
+Copyright © 2004\-2005 Nicolas S. Dade.
+
+This is free software; see the source for copying conditions.  There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A  PARTICULAR PURPOSE.
+.SH "SEE ALSO"
+http://nsd.dyndns.org/pwsafe/
+.br 
+http://passwordsafe.sourceforge.net/,
+http://www.counterpane.com/
+
